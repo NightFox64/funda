@@ -49,10 +49,6 @@ int VectorPush(Vector* v, int value) {
 		if (newBuffer == NULL) {
 			return ERROR_MALLOC;
 		}
-		for (int i = 0; i < v->len; i++) {
-			newBuffer[i] = v->buffer[i];
-			//printf("\n%d\n", v->buffer[i]);
-		}
 
 		//free(v->buffer);
 		v->buffer = newBuffer;
