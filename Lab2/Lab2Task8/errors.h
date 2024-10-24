@@ -1,6 +1,10 @@
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+#include <string.h>
+
+#define MAX_DIGITS 1000
 
 enum ret_type_t{
     SUCCESS,    //Успех
@@ -24,7 +28,7 @@ void logErrors(int code) {
 			break;
 
 		case ERROR_ARGS:
-			printf("Wrong number of arguments\n");
+			printf("Wrong arguments\n");
 			break;
 			
 		case ERROR_MALLOC:
