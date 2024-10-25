@@ -1,119 +1,113 @@
 #include "errors.h"
 
+typedef struct {
+    int base;
+    size_t len;
+    size_t capacity;
+    uint8_t *buffer;
+} BigNumber;
+
 int charToValue(char c) {
-	if (c >= '0' && c <= '9') {
-        return c - '0';
-    }
-	if (c >= 'A' && c <= 'Z') {
-        return c - 'A' + 10;
-    } 
-	if (c >= 'a' && c <= 'z') {
-        return c - 'a' + 10;
-    } 
-	return -1;
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'A' && c <= 'Z') return c - 'A' + 10;
+    if (c >= 'a' && c <= 'z') return c - 'a' + 10;
+    return -1;
 }
 
 char valueToChar(int value) {
-	if (value >= 0 && value <= 9) {
-        return '0' + value;
+    if (value >= 0 && value <= 9) return '0' + value;
+    if (value >= 10 && value <= 35) return 'A' + (value - 10);
+    return '?';
+}
+
+void PrintBigNumber(BigNumber *bigNumber) {
+    for (int i = (int) bigNumber->len - 1; i >= 0; i--) {
+        printf("%c", valueToChar(bigNumber->buffer[i]));
     }
-	if (value >= 10 && value <= 35) {
-        return 'A' + (value - 10);
-    } 
-	return '?';
+    printf("\n");
 }
 
-int baseToDigits(char *numberStr, int base, uint8_t* digits) {
-	if (numberStr == NULL || base < 2 || base > 36) {
-		return ERROR_ARGS;
-	}
-
-	int len = strlen(numberStr);
-	memset(digits, 0, MAX_DIGITS * sizeof(uint8_t));
-
-	for (int i = 0; i < len; i++) {
-		int value = charToValue(numberStr[i]);
-		if (value >= base || value < 0) {
-			return ERROR_ARGS;
-		}
-
-		int carry = value;
-		for (int j = 0; j < MAX_DIGITS; j++) {
-			carry += digits[j] * base;
-			digits[j] = carry % base;
-			carry /= base;
-		}
-	}
-
-	return SUCCESS;
+void DestroyBigNumber(BigNumber *bigNumber) {
+    if (bigNumber->buffer != NULL) {
+        free(bigNumber->buffer);
+    }
+    free(bigNumber);
 }
 
-int addLargeNumbers(uint8_t* result, uint8_t* num1, uint8_t* num2, int base) {
-	int carry = 0;
-	for (int i = 0; i < MAX_DIGITS; i++) {
-		int sum = num1[i] + num2[i] + carry;
-		result[i] = sum % base;
-		carry = sum / base;
-	}
+BigNumber *CreateBigNumber(const char *str, int base) {
+    BigNumber *result = malloc(sizeof(BigNumber));
+    if (!result) {
+        return NULL;
+    }
 
-	return SUCCESS;
+    size_t len = strlen(str);
+    result->len = len;
+    result->capacity = len + 1;
+    result->buffer = calloc(result->capacity, sizeof(uint8_t));
+    result->base = base;
+
+    if (!result->buffer) {
+        free(result);
+        return NULL;
+    }
+
+    for (int i = 0; i < len; i++) {
+        int value = charToValue(str[len - i - 1]);
+        if (value >= base || value < 0) {
+            DestroyBigNumber(result);
+            return NULL;
+        }
+        result->buffer[i] = value;
+    }
+    return result;
 }
 
-void printLargeNumber(uint8_t* digits, int base) {
-	int i = MAX_DIGITS - 1;
-	while (i >= 0 && digits[i] == 0) {
-		i--;
-	}
+int SumBigNumbers(BigNumber *n1, BigNumber *n2) {
+    uint8_t carry = 0;
+    for (int i = 0; i < n2->len; i++) {
+        int sum = n1->buffer[i] + n2->buffer[i] + carry;
+        n1->buffer[i] = sum % n1->base;
+        carry = sum / n1->base;
+    }
 
-	if (i == -1) {
-		printf("0");
-	} else {
-		for (; i >= 0; i--) {
-			printf("%c", valueToChar(digits[i]));
-		}
-	}
-	printf("\n");
+    for (int i = n2->len; i < n1->len; i++) {
+        int sum = n1->buffer[i] + carry;
+        n1->buffer[i] = sum % n1->base;
+        carry = sum / n1->base;
+        if (carry == 0) break;
+    }
+
+    if (carry > 0) {
+        if (n1->len < n1->capacity) {
+            n1->buffer[n1->len] = carry;
+        } else {
+            uint8_t *newBuffer = realloc(n1->buffer, n1->capacity * 3 / 2);
+            if (!newBuffer) {
+                return ERROR_MALLOC;
+            }
+            n1->buffer = newBuffer;
+            n1->capacity = n1->capacity * 3 / 2;
+            n1->buffer[n1->len] = carry;
+        }
+        n1->len++;
+    }
+
+    return SUCCESS;
 }
 
-int sumBigNumbers(uint8_t* sum, int base, int count, ...) {
-	if (base < 2 || base > 36) {
-        return ERROR_MALLOC;
-	}
+void SwapBigNumbers(BigNumber *n1, BigNumber *n2) {
+    uint8_t *tempBuffer = n1->buffer;
+    size_t tempLen = n1->len;
+    size_t tempCapacity = n1->capacity;
+    int tempBase = n1->base;
 
-	va_list args;
-	va_start(args, count);
-    int memo = 2;
+    n1->buffer = n2->buffer;
+    n1->len = n2->len;
+    n1->capacity = n2->capacity;
+    n1->base = n2->base;
 
-	if (sum == NULL) {
-		return ERROR_MALLOC;
-	}
-	memset(sum, 0, MAX_DIGITS * sizeof(uint8_t));
-
-	for (int i = 0; i < count; i++) {
-		char* numberStr = va_arg(args, char*);
-
-		uint8_t* currentNumber = (uint8_t*)malloc(MAX_DIGITS * sizeof(uint8_t));
-		if (currentNumber == NULL) {
-			free(sum);
-			return ERROR_MALLOC;
-		}
-
-		int state = baseToDigits(numberStr, base, currentNumber);
-		if (state != SUCCESS) {
-			free(currentNumber);
-			free(sum);
-			return state;
-		}
-
-		state = addLargeNumbers(sum, sum, currentNumber, base);
-		free(currentNumber);
-		if (state != SUCCESS) {
-			free(sum);
-			return state;
-		}
-	}
-
-	va_end(args);
-
-	return SUCCESS;
+    n2->buffer = tempBuffer;
+    n2->len = tempLen;
+    n2->capacity = tempCapacity;
+    n2->base = tempBase;
 }

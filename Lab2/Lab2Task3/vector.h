@@ -44,13 +44,11 @@ void PrintVector(Vector* v) {
 
 int VectorPush(Vector* v, int value) {
 	if (v->len + 1 >= v->capacity) {
-		//int* newBuffer = (int*)malloc(v->capacity * sizeof(int*) * 2);
 		int* newBuffer = (int*)realloc(v->buffer, v->capacity * sizeof(int) * 2);
 		if (newBuffer == NULL) {
 			return ERROR_MALLOC;
 		}
 
-		//free(v->buffer);
 		v->buffer = newBuffer;
 		v->capacity *= 2;
 	}

@@ -1,19 +1,48 @@
 #include "functions.h"
 
+int sumBigNumbers(BigNumber **result, int base, int count, ...) {
+    if (base < 2 || base > 36) {
+        return ERROR_ARGS;
+    }
+
+    int code = SUCCESS;
+    va_list args;
+    va_start(args, count);
+
+    BigNumber *sum = CreateBigNumber("0", base);
+    for (int i = 0; i < count; i++) {
+        char *numberStr = va_arg(args, char *);
+        BigNumber *current = CreateBigNumber(numberStr, base);
+        if (current == NULL) {
+            DestroyBigNumber(sum);
+            return ERROR_MALLOC;
+        }
+
+        if (sum->len < current->len) {
+            SwapBigNumbers(sum, current);
+        }
+
+        code = SumBigNumbers(sum, current);
+        if (code != SUCCESS) {
+            DestroyBigNumber(sum);
+            DestroyBigNumber(current);
+            return code;
+        }
+        DestroyBigNumber(current);
+    }
+
+    va_end(args);
+    *result = sum;
+    return SUCCESS;
+}
+
 int main() {
-    uint8_t* sum;
-    sum = (uint8_t *)malloc(MAX_DIGITS * sizeof(uint8_t));
-	int code;
-    int base = 2;
-
-    code = sumBigNumbers(sum, base, 3, "101", "110", "11");
-	if (code != SUCCESS) {
-		logErrors(code);
+    BigNumber* result;
+    int code = sumBigNumbers(&result, 16, 3, "0", "0", "0");
+    if (code != SUCCESS) {
         return code;
-	}
-
-    printf("Sum: ");
-	printLargeNumber(sum, base);
-	free(sum);
-	return 0;
+    }
+    PrintBigNumber(result);
+    DestroyBigNumber(result);
+    return SUCCESS;
 }
