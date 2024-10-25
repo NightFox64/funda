@@ -10,7 +10,7 @@ int main() {
         return ERROR_MALLOC;
     }
 
-    int code = decomposePolynomial(epsilon, a, result, n, 5.0, 2.0, 10.0);
+    int code = decomposePolynomial(epsilon, a, result, n, 2.0, 3.0, 4.0);
     if (code != SUCCESS) {
         logErrors(code);
         return code;
