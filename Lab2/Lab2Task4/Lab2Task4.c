@@ -2,14 +2,14 @@
 
 int main() {
 	double res;
-	int code = calculatePolynom(&res, 2.0, 4.0, 1.0, 1.0, 1.0, 1.0, 1.0);
+	int code = calculatePolynom(&res, 10.0, 4.0, 1.0, 1.0, 1.0, 1.0, 1.0);
 	if (code != SUCCESS) {
         logErrors(code);
 		return code;
 	}
 	printf("%lf\n", res);
 
-	int resultB = isConvexPolygon(6, 1.0, 2.0, 2.0, 4.0, 4.0, 4.0, 5.0, 2.0, 3.0, 1.0, 3.0, 2.0);
+	int resultB = isConvexPolygon(5, 0.0, 0.0, 0.0, 5.0, 5.0, 5.0, 2.0, 2.0, 5.0, 0.0, 3.0, 2.0);
 	if (resultB) {
 		printf("convex\n");
 	} else {
@@ -18,7 +18,7 @@ int main() {
 
 	code = SUCCESS;
 	int n = 2;
-	int* result = findKaprekarNumbers(&code, 10, n, "45", "9");
+	int* result = findKaprekarNumbers(&code, 10, n, "01", "9");
 	if (code != SUCCESS) {
         logErrors(code);
 		return code;

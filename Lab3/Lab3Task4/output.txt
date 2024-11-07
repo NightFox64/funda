@@ -1,0 +1,103 @@
+Put the city: Put the street: Put house number: Put building body (if has): Put flat number: Put index (6 symbols): 
+Menu:
+1. Add an mail
+2. Cancel mail
+3. Find mail with ID
+4. Show all mails
+5. Show all timed up mails
+6. Change get status for mail
+0. Exit
+Choose an option: Put an ID (14 symbols): Put the weight of mail: Put creating time (dd:MM:yyyy hh:mm:ss): Put recieving time (dd:MM:yyyy hh:mm:ss): Put '1' if reciever got the mail and '0' if not: Put the city: Put the street: Put house number: Put building body (if has): Put flat number: Put index (6 symbols): Email added successfully.
+
+Menu:
+1. Add an mail
+2. Cancel mail
+3. Find mail with ID
+4. Show all mails
+5. Show all timed up mails
+6. Change get status for mail
+0. Exit
+Choose an option: Mail 36381946154810:
+Sending time: 12:05:2005 12:34:05
+Getting time: 19:09:2005 23:43:12
+Weight: 13.000000kg
+The mail is waiting
+Adress Moscow
+ Rofi
+ 43
+ 1
+ 14
+ 459382
+
+Menu:
+1. Add an mail
+2. Cancel mail
+3. Find mail with ID
+4. Show all mails
+5. Show all timed up mails
+6. Change get status for mail
+0. Exit
+Choose an option: 
+--- Timed up mails ---
+Mail 36381946154810:
+Sending time: 12:05:2005 12:34:05
+Getting time: 19:09:2005 23:43:12
+Weight: 13.000000kg
+The mail is waiting
+Adress Moscow
+ Rofi
+ 43
+ 1
+ 14
+ 459382
+
+Menu:
+1. Add an mail
+2. Cancel mail
+3. Find mail with ID
+4. Show all mails
+5. Show all timed up mails
+6. Change get status for mail
+0. Exit
+Choose an option: Put the ID for changing: Put '1' if reciever got the mail and '0' if not: 
+
+Menu:
+1. Add an mail
+2. Cancel mail
+3. Find mail with ID
+4. Show all mails
+5. Show all timed up mails
+6. Change get status for mail
+0. Exit
+Choose an option: Put the ID for searching: Mail 36381946154810:
+Sending time: 12:05:2005 12:34:05
+Getting time: 19:09:2005 23:43:12
+Weight: 13.000000kg
+The mail is recieved
+Adress Moscow
+ Rofi
+ 43
+ 1
+ 14
+ 459382
+
+Menu:
+1. Add an mail
+2. Cancel mail
+3. Find mail with ID
+4. Show all mails
+5. Show all timed up mails
+6. Change get status for mail
+0. Exit
+Choose an option: 
+--- Timed up mails ---
+
+Menu:
+1. Add an mail
+2. Cancel mail
+3. Find mail with ID
+4. Show all mails
+5. Show all timed up mails
+6. Change get status for mail
+0. Exit
+Choose an option: Exiting the program.

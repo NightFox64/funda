@@ -7,7 +7,7 @@ int main() {
 		logErrors(ERROR_OPEN_FILE);
 		return ERROR_OPEN_FILE;
 	}
-	int code = overfprintf(out, "%Ro i hate people", 2024);
+	int code = overfprintf(stdout, "%Ro %Zr %mi", 2024, 55, 16);
 	if (code != SUCCESS){
 		logErrors(code);
 		return code;
