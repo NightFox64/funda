@@ -29,9 +29,11 @@ Mail *FindElement(Post *post, char *id) {
     String *compare = NewString(id);
     for (int i = 0; i < post->Mails->len; i++) {
         if (StringEqual(post->Mails->buffer[i]->ID, compare)) {
+            DeleteString(compare);
             return post->Mails->buffer[i];
         }
     }
+    DeleteString(compare);
     return NULL;
 }
 

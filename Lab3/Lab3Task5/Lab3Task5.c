@@ -65,6 +65,7 @@ int main(int argc, char* argv[]) {
 
             findStudentByLastName(output, students, studentCount, lastName);
 
+            free(lastName);
         } else if (command == 3) {
             char *firstName;
             printf("Input student's name: ");
@@ -72,13 +73,15 @@ int main(int argc, char* argv[]) {
 
             findStudentByFirstName(output, students, studentCount, firstName);
 
-
+            free(firstName);
         } else if (command == 4) {
             char* group;
             printf("Input student's group: ");
             scanf("%ms", &group);
 
             findStudentByGroup(output, students, studentCount, group);
+
+            free(group);
 
         } else if (command == 5) {
             printf("Sort with:\n");

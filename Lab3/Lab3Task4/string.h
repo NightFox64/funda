@@ -23,12 +23,12 @@ size_t StringLen(String *s) {
 }
 
 String *NewString(const char *s) {
-    String *result = malloc(sizeof(String));
+    String *result = (String*)malloc(sizeof(String));
     if (!result) {
         return NULL;
     }
     size_t len = strlen(s);
-    char *buffer = malloc(sizeof(char) * (strlen(s) + 1));
+    char *buffer = (char*)malloc(sizeof(char) * (strlen(s) + 1));
 
     if (!buffer) {
         free(result);
