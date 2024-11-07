@@ -10,7 +10,7 @@ typedef struct {
     char *buffer;
 } String;
 
-size_t strlen(const char *s) {
+size_t strlen(char *s) {
     size_t count = 0;
     for (char *i = s; *i; i++) {
         count++;
@@ -46,7 +46,6 @@ String *NewString(const char *s) {
 
 void DeleteString(String *s) {
     free(s->buffer);
-    s->Len = 0;
 }
 
 bool StringLess(String *s1, String *s2) {

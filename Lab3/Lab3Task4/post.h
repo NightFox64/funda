@@ -30,10 +30,12 @@ Mail *FindElement(Post *post, char *id) {
     for (int i = 0; i < post->Mails->len; i++) {
         if (StringEqual(post->Mails->buffer[i]->ID, compare)) {
             DeleteString(compare);
+            free(compare);
             return post->Mails->buffer[i];
         }
     }
     DeleteString(compare);
+    free(compare);
     return NULL;
 }
 
@@ -69,9 +71,13 @@ bool RemoveElement(Post *post, char *id) {
     for (int i = 0; i < post->Mails->len; i++) {
         if (StringEqual(post->Mails->buffer[i]->ID, compare)) {
             VectorPop(post->Mails, i);
+            DeleteString(compare);
+            free(compare);
             return true;
         }
     }
+    DeleteString(compare);
+    free(compare);
     return false;
 }
 
