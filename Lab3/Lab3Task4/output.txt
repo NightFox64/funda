@@ -18,8 +18,8 @@ Menu:
 6. Change get status for mail
 0. Exit
 Choose an option: Mail 36381946154810:
-Sending time: 12:05:2005 12:34:05
-Getting time: 19:09:2005 23:43:12
+Sending time: 20:05:2016 12:34:05
+Getting time: 30:02:2016 23:43:12
 Weight: 13.000000kg
 The mail is waiting
 Adress Moscow
@@ -40,8 +40,8 @@ Menu:
 Choose an option: 
 --- Timed up mails ---
 Mail 36381946154810:
-Sending time: 12:05:2005 12:34:05
-Getting time: 19:09:2005 23:43:12
+Sending time: 20:05:2016 12:34:05
+Getting time: 30:02:2016 23:43:12
 Weight: 13.000000kg
 The mail is waiting
 Adress Moscow
@@ -70,8 +70,8 @@ Menu:
 6. Change get status for mail
 0. Exit
 Choose an option: Put the ID for searching: Mail 36381946154810:
-Sending time: 12:05:2005 12:34:05
-Getting time: 19:09:2005 23:43:12
+Sending time: 20:05:2016 12:34:05
+Getting time: 30:02:2016 23:43:12
 Weight: 13.000000kg
 The mail is recieved
 Adress Moscow
