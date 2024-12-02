@@ -28,5 +28,7 @@ int main() {
 		printf("%d\n", result[i]);
 	}
 
+	free(result);
+
 	return SUCCESS;
 }
