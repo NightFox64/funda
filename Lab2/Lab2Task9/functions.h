@@ -86,10 +86,15 @@ bool* checkFractions(int* code, int base, int fractionsNum, ...) {
 		return NULL;
 	}
 
+	double eps = 0.000001;
+
 	va_list args;
 	va_start(args, fractionsNum);
 	for (int i = 0; i < fractionsNum; i++) {
 		double fraction = fabs(va_arg(args, double));
+		if (fraction > 1.0 + eps) {
+			*code = ERROR_ARGS;
+		}
 		int numerator, denominator;
 		doubleToFraction(fraction, &numerator, &denominator, 0.000001);
 		int divisor = gcd(numerator, denominator);
