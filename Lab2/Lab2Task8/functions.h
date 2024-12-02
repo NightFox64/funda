@@ -21,8 +21,15 @@ char valueToChar(int value) {
 }
 
 void PrintBigNumber(BigNumber *bigNumber) {
+    int leadingZero = 1;
     for (int i = (int) bigNumber->len - 1; i >= 0; i--) {
-        printf("%c", valueToChar(bigNumber->buffer[i]));
+        if (bigNumber->buffer[i] != 0 || !leadingZero) {
+            printf("%c", valueToChar(bigNumber->buffer[i]));
+            leadingZero = 0;
+        }
+    }
+    if (leadingZero) {
+        printf("0");
     }
     printf("\n");
 }

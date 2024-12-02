@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include "string.h"
 
-#define MAX_DIGITS 1000
+//#define MAX_DIGITS 1000
 
 enum ret_type_t{
     SUCCESS,    //Успех
