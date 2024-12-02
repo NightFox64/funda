@@ -1,441 +1,323 @@
-#include <math.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "errors.h"
 
-#define DEFAULT_BUFF_SIZE 1024
-#define MAX_FIB_INDEX 47    //Иначе переполнение int
-
-
-
-int zeckendorf(unsigned int n, char *result) {
-    unsigned int fib[MAX_FIB_INDEX];
-    fib[0] = 1;
-    fib[1] = 2;
-    int count = 2;
-
-    while ((fib[count - 1] + fib[count - 2] <= n) && (count <= MAX_FIB_INDEX)) {
-        fib[count] = fib[count - 1] + fib[count - 2];
-        count++;
-    }
-
-    if (n > fib[MAX_FIB_INDEX] && count >= MAX_FIB_INDEX){
-        return ERROR_FULL;
-    }
-
-    result[0] = '\0';
-    bool used[MAX_FIB_INDEX];
-    for (int i = count-1; i >= 0; i--) {
-        if (n >= fib[i]) {
-            n -= fib[i];
-            used[i] = true;
-        } else {
-            used[i] = false;
-        }
-    }
-
-    for (int i = count - 1; i >= 0; i--) {
-        strcat(result, used[i] ? "1" : "0");
-    }
-    strcat(result, "1");
-    return SUCCESS;
-}
-
-void intToRoman(int num, char *result) {
-    struct {
+void int_to_roman(int num, char *buffer) {
+    struct Roman {
         int value;
         const char *symbol;
-    } roman[] = {{1000, "M"},
-                 {900,  "CM"},
-                 {500,  "D"},
-                 {400,  "CD"},
-                 {100,  "C"},
-                 {90,   "XC"},
-                 {50,   "L"},
-                 {40,   "XL"},
-                 {10,   "X"},
-                 {9,    "IX"},
-                 {5,    "V"},
-                 {4,    "IV"},
-                 {1,    "I"}};
+    } roman[] = {
+        {1000, "M"}, {900, "CM"}, {500, "D"}, {400, "CD"},
+        {100, "C"}, {90, "XC"}, {50, "L"}, {40, "XL"},
+        {10, "X"}, {9, "IX"}, {5, "V"}, {4, "IV"}, {1, "I"}
+    };
 
-    result[0] = '\0';
+    buffer[0] = '\0';
     for (int i = 0; i < 13 && num > 0; i++) {
         while (num >= roman[i].value) {
-            strcat(result, roman[i].symbol);
+            strcat(buffer, roman[i].symbol);
             num -= roman[i].value;
         }
     }
-    return;
 }
 
-int toDecimal(char *strNum, int base, bool upper) {
+void int_to_fib_zec(unsigned int num, char *buffer) {
+    unsigned int fib[64], i = 0;
+    fib[0] = 1; fib[1] = 2;
+    for (i = 2; i < 64 && fib[i - 1] <= num; i++) {
+        fib[i] = fib[i - 1] + fib[i - 2];
+    }
+
+    buffer[0] = '\0';
+    for (int j = i - 1; j >= 0; j--) {
+        if (num >= fib[j]) {
+            strcat(buffer, "1");
+            num -= fib[j];
+        } else {
+            strcat(buffer, "0");
+        }
+    }
+    strcat(buffer, "1");
+}
+
+void int_to_base(int num, int base, char *buffer, int uppercase) {
+    char digits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+    if (uppercase) {
+        for (int i = 10; i < 36; i++) digits[i] = toupper(digits[i]);
+    }
+
+    char temp[64];
+    int index = 0;
+    int is_negative = num < 0;
+
+    if (is_negative) num = -num;
+
+    do {
+        temp[index++] = digits[num % base];
+        num /= base;
+    } while (num > 0);
+
+    if (is_negative) temp[index++] = '-';
+
+    for (int i = 0; i < index; i++) {
+        buffer[i] = temp[index - i - 1];
+    }
+    buffer[index] = '\0';
+}
+
+int base_to_decimal(const char *num_str, int base) {
     int result = 0;
-    int multiplier = 1;
-    if (*strNum == '-') {
-        multiplier = -1;
-        strNum++;
-    }
-    for (char *i = strNum; *i; i++) {
-        if (*i == '\0') {
-            return result * multiplier;
-        }
-        result *= base;
-        int appender = 0;
-        if (*i <= '9' && *i >= '0') {
-            appender = *i - '0';
-        } else if (upper && *i >= 'A' && *i <= 'Z') {
-            appender = *i - 'A' + 10;
+    int is_negative = (*num_str == '-');
+    if (is_negative) num_str++;
 
-        } else if (!upper && *i >= 'a' && *i <= 'z') {
-            appender = *i - 'a' + 10;
-        } else {
-            return 0;
-        }
-        if (appender + 1 > base) {
-            return 0;
-        }
-        result += appender;
+    while (*num_str) {
+        char c = tolower(*num_str);
+        int value = (c >= '0' && c <= '9') ? c - '0' : c - 'a' + 10;
+        result = result * base + value;
+        num_str++;
     }
-    return result * multiplier;
+    return is_negative ? -result : result;
 }
 
-void memoryDumpToString(unsigned char* bytes, size_t size, char* output) {
-    for (int i = size - 1; i >= 0; i--) {
+void memory_dump(const void *value, size_t size, char *buffer) {
+    const unsigned char *byte = (const unsigned char *)value;
+    char temp[16];
+    buffer[0] = '\0';
+    for (size_t i = 0; i < size; i++) {
         for (int j = 7; j >= 0; j--) {
-            char* c = (char*)malloc(sizeof(char));
-            sprintf(c, "%c", (((bytes[i] >> j) & 1) + '0'));
-            strcat(output, c);
+            sprintf(temp, "%d", (byte[i] >> j) & 1);
+            strcat(buffer, temp);
         }
-        strcat(output, " ");
+        if (i < size - 1) strcat(buffer, " ");
     }
-    strcat(output, "\0");
 }
 
-int checkBaseto(char* str, int size, int base){
-    char charBase;
-    if (base <= 9){
-        charBase = base + '0';
-    }
-    else{
-        charBase = base + 'a' - 10;
-    }
-
-    int i;
-    if (str[0] == '-'){
-        i = 1;
-    }
-    else{
-        i = 0;
-    }
-
-    for (; i < size - 1; i++)
-    {
-        if(str[i] >= charBase){
-            return ERROR_FULL;
-        }
-    }
-    return SUCCESS;
-}
-
-int checkBaseTO(char* str, int size, int base){
-    char charBase;
-    if (base <= 9){
-        charBase = base + '0';
-    }
-    else{
-        charBase = base + 'A' - 10;
-    }
-
-    int i;
-    if (str[0] == '-'){
-        i = 1;
-    }
-    else{
-        i = 0;
-    }
-
-    for (; i < size - 1; i++)
-    {
-        if(str[i] >= charBase){
-            return ERROR_FULL;
-        }
-    }
-    return SUCCESS;
-}
-
-int oversprintf(char *str, char *format, ...) {
+int overfprintf(FILE *stream, const char *format, ...) {
     va_list args;
     va_start(args, format);
-    char *p = format;
     char buffer[1024];
-    int total_chars = 0;
+    char custom_buffer[256];
+    int total_written = 0;
 
-    while (*p) {
-        if (*p == '%' && *(p + 1)) {
-            p++;
-            if (*p == 'R' && *(p + 1) == 'o') {
-                p += 2;
-                int num = va_arg(args, int);
-                char roman[512];
-                intToRoman(num, roman);
-                total_chars += sprintf(str + total_chars, "%s", roman);
-
-            } else if (*p == 'Z' && *(p + 1) == 'r') {
-                unsigned int num = va_arg(args, unsigned int);
-                char zeckendorfNum[1024];
-                if (zeckendorf(num, zeckendorfNum)){
-                    return ERROR_FULL;
-                }
-                total_chars += sprintf(str + total_chars, "%s", zeckendorfNum);
-                p += 2;
-
-            } else if (*p == 'C' && *(p + 1) == 'v') {
-                p += 2;
-                int num = va_arg(args, int);
-                int base = va_arg(args, int);
-                if (base < 2 || base > 36) {
-                    base = 10;
-                }
-                char result[100];
-                char *ptr = result + sizeof(result) - 1;
-                *ptr = '\0';
-                do {
-                    int currentDigit = num % base;
-                    if (currentDigit < 10) {
-                        *--ptr = '0' + currentDigit;
-                    } else {
-                        *--ptr = 'a' + currentDigit - 10;
+    while (*format) {
+        if (*format == '%') {
+            format++;
+            switch (*format) {
+                case 'R':
+                    format++;
+                    if (*format == 'o') {
+                        int flagMin = 0;
+                        int num = va_arg(args, int);
+                        if (num < 0) {
+                            num *= -1;
+                            flagMin = 1;
+                        }
+                        int_to_roman(num, custom_buffer);
+                        if (flagMin) {
+                            total_written += fprintf(stream, "-%s", custom_buffer);
+                        }
+                        else {
+                            total_written += fprintf(stream, "%s", custom_buffer);
+                        }
                     }
-                    num /= base;
-                } while (num > 0);
-                total_chars += sprintf(str + total_chars, "%s", ptr);
-            } else if (*p == 'C' && *(p + 1) == 'V') {
-                p += 2;
-                int num = va_arg(args, int);
-                int base = va_arg(args, int);
-                if (base < 2 || base > 36) {
-                    base = 10;
-                }
-                char result[100];
-
-                char *ptr = result + sizeof(result) - 1;
-                *ptr = '\0';
-
-                do {
-                    int currentDigit = num % base;
-                    if (currentDigit < 10) {
-                        *--ptr = '0' + currentDigit;
-                    } else {
-                        *--ptr = 'A' + currentDigit - 10;
+                    break;
+                case 'Z':
+                    format++;
+                    if (*format == 'r') {
+                        int flagMin = 0;
+                        unsigned int num = va_arg(args, unsigned int);
+                        if (num < 0) {
+                            num *= -1;
+                            flagMin = 1;
+                        }
+                        int_to_fib_zec(num, custom_buffer);
+                        if (flagMin) {
+                            total_written += fprintf(stream, "-%s", custom_buffer);
+                        }
+                        else {
+                            total_written += fprintf(stream, "%s", custom_buffer);
+                        }
                     }
-                    num /= base;
-                } while (num > 0);
-
-                total_chars += sprintf(str + total_chars, "%s", ptr);
-            } else if (*p == 't' && *(p + 1) == 'o') {
-                p += 2;
-                char *arg = va_arg(args, char*);
-                int base = va_arg(args, int);
-                if (checkBaseto(arg, strlen(arg), base)){
-                    return ERROR_FULL;
-                }
-                int decimal = toDecimal(arg, base, false);
-                total_chars += sprintf(str + total_chars, "%d", decimal);
-            } else if (*p == 'T' && *(p + 1) == 'O') {
-                p += 2;
-                char *arg = va_arg(args, char*);
-                int base = va_arg(args, int);
-                if (checkBaseTO(arg, strlen(arg), base)){
-                    return ERROR_FULL;
-                }
-                int decimal = toDecimal(arg, base, true);
-                total_chars += sprintf(str + total_chars, "%d", decimal);
-            } else if (*p == 'm' && (*(p + 1) == 'i' || *(p + 1) == 'u' || *(p + 1) == 'd' || *(p+1) == 'f')) {
-                p++;
-                unsigned char* bytes;
-                size_t size;
-                if (*p == 'i') {
-                    int32_t i = (int32_t) va_arg(args, int);
-                    bytes = (unsigned char*)&i;
-                    size = 4;
-                } else if (*p == 'u') {
-                    uint32_t u = (uint32_t) va_arg(args, int);
-                    bytes = (unsigned char*)&u;
-                    size = 4;
-                } else if (*p == 'd') {
-                    double d = va_arg(args, double);
-                    bytes = (unsigned char*)&d;
-                    size = sizeof(d);
-                } else if (*p == 'f') {
-                    float f = (float) va_arg(args, double);
-                    bytes = (unsigned char*)&f;
-                    size = sizeof(f);
-                }
-                p++;
-                char* output = (char*)malloc(sizeof(char) * strlen(bytes));
-                output[0] = '\0';
-                memoryDumpToString(bytes, size, output);
-                total_chars += sprintf(str + total_chars, "%s", output);
-            } else {
-                char *start = p - 1;
-                while (*p && !strchr("diouxXeEfFgGaAcspn%", *p)) {
-                    p++;
-                }
-                if (*p) {
-                    p++;
-                    strncpy(buffer, start, p - start);
-                    buffer[p - start] = '\0';
-                    total_chars += vsprintf(str + total_chars, buffer, args);
-                }
+                    break;
+                case 'C':
+                    format++;
+                    int flagMin = 0;
+                    int num = (va_arg(args, int));
+                    if (num < 0) {
+                        num *= -1;
+                        flagMin = 1;
+                    }
+                    int base = abs(va_arg(args, int));
+                    if (base < 2 || base > 36) {
+                        base = 10;
+                    }
+                    int_to_base(num, base, custom_buffer, *format == 'V');
+                    if (flagMin) {
+                        total_written += fprintf(stream, "-%s", custom_buffer);
+                    }
+                    else {
+                        total_written += fprintf(stream, "%s", custom_buffer);
+                    }
+                    break;
+                case 't':
+                    format++;
+                    if (*format == 'o') {
+                        char *num_str = va_arg(args, char *);
+                        int base = va_arg(args, int);
+                        if (base < 2 || base > 36) base = 10;
+                        int result = base_to_decimal(num_str, base);
+                        total_written += fprintf(stream, "%d", result);
+                    }
+                    break;
+                case 'T':
+                    format++;
+                    if (*format == 'O') {
+                        char *num_str = va_arg(args, char *);
+                        int base = va_arg(args, int);
+                        if (base < 2 || base > 36) base = 10;
+                        int result = base_to_decimal(num_str, base);
+                        total_written += fprintf(stream, "%d", result);
+                    }
+                    break;
+                case 'm':
+                    format++;
+                    switch (*format) {
+                        case 'i': {
+                            int value = va_arg(args, int);
+                            memory_dump(&value, sizeof(value), custom_buffer);
+                            total_written += fprintf(stream, "%s", custom_buffer);
+                            break;
+                        }
+                        case 'u': {
+                            unsigned int value = va_arg(args, unsigned int);
+                            memory_dump(&value, sizeof(value), custom_buffer);
+                            total_written += fprintf(stream, "%s", custom_buffer);
+                            break;
+                        }
+                        case 'd': {
+                            double value = va_arg(args, double);
+                            memory_dump(&value, sizeof(value), custom_buffer);
+                            total_written += fprintf(stream, "%s", custom_buffer);
+                            break;
+                        }
+                        case 'f': {
+                            float value = (float)va_arg(args, double);
+                            memory_dump(&value, sizeof(value), custom_buffer);
+                            total_written += fprintf(stream, "%s", custom_buffer);
+                            break;
+                        }
+                    }
+                    break;
+                default:
+                    fputc('%', stream);
+                    fputc(*format, stream);
+                    total_written += 2;
             }
         } else {
-            str[total_chars++] = *p;
-            p++;
+            fputc(*format, stream);
+            total_written++;
         }
+        format++;
     }
 
-    str[total_chars] = '\0';
     va_end(args);
-    return SUCCESS;
+    return total_written;
 }
 
-int overfprintf(FILE *out, char *format, ...) {
+int oversprintf(char *str, const char *format, ...) {
     va_list args;
     va_start(args, format);
-    char *p = format;
     char buffer[1024];
-    int total_chars = 0;
-    char str[1024];
-    while (*p) {
-        if (*p == '%' && *(p + 1)) {
-            p++;
-            if (*p == 'R' && *(p + 1) == 'o') {
-                p += 2;
-                int num = va_arg(args, int);
-                char roman[100];
-                intToRoman(num, roman);
-                total_chars += sprintf(str + total_chars, "%s", roman);
+    char custom_buffer[256];
+    int total_written = 0;
 
-            } else if (*p == 'Z' && *(p + 1) == 'r') {
-                unsigned int num = va_arg(args, unsigned int);
-                char zeckendorfNum[1024];
-                //zeckendorf(num, zeckendorfNum);
-                if (zeckendorf(num, zeckendorfNum)){
-                    return ERROR_FULL;
-                }
-                total_chars += sprintf(str + total_chars, "%s", zeckendorfNum);
-                p += 2;
-
-            } else if (*p == 'C' && *(p + 1) == 'v') {
-                p += 2;
-                int num = va_arg(args, int);
-                int base = va_arg(args, int);
-                if (base < 2 || base > 36) {
-                    base = 10;
-                }
-                char result[100];
-                char *ptr = result + sizeof(result) - 1;
-                *ptr = '\0';
-                do {
-                    int currentDigit = num % base;
-                    if (currentDigit < 10) {
-                        *--ptr = '0' + currentDigit;
-                    } else {
-                        *--ptr = 'a' + currentDigit - 10;
+    while (*format) {
+        if (*format == '%') {
+            format++;
+            switch (*format) {
+                case 'R':
+                    format++;
+                    if (*format == 'o') {
+                        int num = abs(va_arg(args, int));
+                        int_to_roman(num, custom_buffer);
+                        total_written += fprintf(stdout, "%s", custom_buffer);
                     }
-                    num /= base;
-                } while (num);
-                total_chars += sprintf(str + total_chars, "%s", ptr);
-            } else if (*p == 'C' && *(p + 1) == 'V') {
-                p += 2;
-                int num = va_arg(args, int);
-                int base = va_arg(args, int);
-                if (base < 2 || base > 36) {
-                    base = 10;
-                }
-                char result[100];
-                char *ptr = result + sizeof(result) - 1;
-                *ptr = '\0';
-
-                do {
-                    int currentDigit = num % base;
-                    if (currentDigit < 10) {
-                        *--ptr = '0' + currentDigit;
-                    } else {
-                        *--ptr = 'A' + currentDigit - 10;
+                    break;
+                case 'Z':
+                    format++;
+                    if (*format == 'r') {
+                        unsigned int num = va_arg(args, unsigned int);
+                        int_to_fib_zec(num, custom_buffer);
+                        total_written += fprintf(stdout, "%s", custom_buffer);
                     }
-                    num /= base;
-                } while (num);
-
-                total_chars += sprintf(str + total_chars, "%s", ptr);
-            } else if (*p == 't' && *(p + 1) == 'o') {
-                p += 2;
-                char *arg = va_arg(args, char*);
-                int base = va_arg(args, int);
-                if (checkBaseto(arg, strlen(arg), base)){
-                    return ERROR_FULL;
-                }
-                int decimal = toDecimal(arg, base, false);
-                total_chars += sprintf(str + total_chars, "%d", decimal);
-            } else if (*p == 'T' && *(p + 1) == 'O') {
-                p += 2;
-                char *arg = va_arg(args, char*);
-                int base = va_arg(args, int);
-                if (checkBaseTO(arg, strlen(arg), base)){
-                    return ERROR_FULL;
-                }
-                int decimal = toDecimal(arg, base, true);
-                total_chars += sprintf(str + total_chars, "%d", decimal);
-            } else if (*p == 'm') {
-                p++;
-                unsigned char* bytes;
-                size_t size;
-                if (*p == 'i') {
-                    int32_t i = (int32_t) va_arg(args, int);
-                    bytes = (unsigned char*)&i;
-                    size = 4;
-                } else if (*p == 'u') {
-                    uint32_t u = (uint32_t) va_arg(args, int);
-                    bytes = (unsigned char*)&u;
-                    size = 4;
-                } else if (*p == 'd') {
-                    double d = va_arg(args, double);
-                    bytes = (unsigned char*)&d;
-                    size = sizeof(d);
-                } else if (*p == 'f') {
-                    float f = (float) va_arg(args, double);
-                    bytes = (unsigned char*)&f;
-                    size = sizeof(f);
-                }
-                p++;
-                char* output = (char*)malloc(sizeof(char) * strlen(bytes));
-                output[0] = '\0';
-                memoryDumpToString(bytes, size, output);
-                total_chars += sprintf(str + total_chars, "%s", output);
-            } else {
-                char *start = p - 1;
-                while (*p && !strchr("diouxXeEfFgGaAcspn%", *p)) {
-                    p++;
-                }
-                if (*p) {
-                    p++;
-                    strncpy(buffer, start, p - start);
-                    buffer[p - start] = '\0';
-                    total_chars += vsprintf(str + total_chars, buffer, args);
-                }
+                    break;
+                case 'C':
+                    format++;
+                    int num = abs(va_arg(args, int));
+                    int base = abs(va_arg(args, int));
+                    if (base < 2 || base > 36) base = 10;
+                    int_to_base(num, base, custom_buffer, *format == 'V');
+                    total_written += fprintf(stdout, "%s", custom_buffer);
+                    break;
+                case 't':
+                    format++;
+                    if (*format == 'o') {
+                        char *num_str = va_arg(args, char *);
+                        int base = va_arg(args, int);
+                        if (base < 2 || base > 36) base = 10;
+                        int result = base_to_decimal(num_str, base);
+                        total_written += fprintf(stdout, "%d", result);
+                    }
+                    break;
+                case 'T':
+                    format++;
+                    if (*format == 'O') {
+                        char *num_str = va_arg(args, char *);
+                        int base = va_arg(args, int);
+                        if (base < 2 || base > 36) base = 10;
+                        int result = base_to_decimal(num_str, base);
+                        total_written += fprintf(stdout, "%d", result);
+                    }
+                    break;
+                case 'm':
+                    format++;
+                    switch (*format) {
+                        case 'i': {
+                            int value = va_arg(args, int);
+                            memory_dump(&value, sizeof(value), custom_buffer);
+                            total_written += fprintf(stdout, "%s", custom_buffer);
+                            break;
+                        }
+                        case 'u': {
+                            unsigned int value = va_arg(args, unsigned int);
+                            memory_dump(&value, sizeof(value), custom_buffer);
+                            total_written += fprintf(stdout, "%s", custom_buffer);
+                            break;
+                        }
+                        case 'd': {
+                            double value = va_arg(args, double);
+                            memory_dump(&value, sizeof(value), custom_buffer);
+                            total_written += fprintf(stdout, "%s", custom_buffer);
+                            break;
+                        }
+                        case 'f': {
+                            float value = (float)va_arg(args, double);
+                            memory_dump(&value, sizeof(value), custom_buffer);
+                            total_written += fprintf(stdout, "%s", custom_buffer);
+                            break;
+                        }
+                    }
+                    break;
+                default:
+                    fputc('%', stdout);
+                    fputc(*format, stdout);
+                    total_written += 2;
             }
         } else {
-            str[total_chars++] = *p;
-            p++;
+            fputc(*format, stdout);
+            total_written++;
         }
+        format++;
     }
-    str[total_chars] = '\0';
+
     va_end(args);
-    fprintf(out, "%s", str);
-    return SUCCESS;
+    return total_written;
 }

@@ -1,8 +1,8 @@
-#include <stdarg.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
+#include <ctype.h>
 
 enum ret_type_t{
     SUCCESS,    //Успех
